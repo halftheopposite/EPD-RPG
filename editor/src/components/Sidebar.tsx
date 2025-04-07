@@ -19,6 +19,7 @@ function Sidebar(): ReactElement {
     handleNewMap,
     handleMapSelected,
     handleMapDeleted,
+    handleMapRenamed,
     handleSave,
     handleLoad,
     handleExport,
@@ -114,6 +115,7 @@ function Sidebar(): ReactElement {
           selectedMapId={state.selectedMapId}
           onMapSelected={handleMapSelected}
           onMapDeleted={handleMapDeleted}
+          onMapRenamed={handleMapRenamed}
         />
       </div>
 

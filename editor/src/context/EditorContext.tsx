@@ -33,6 +33,7 @@ interface EditorContextType {
   handleNewMap: () => void;
   handleMapSelected: (mapId: string) => void;
   handleMapDeleted: (mapId: string) => void;
+  handleMapRenamed: (mapId: string, newName: string) => void;
   handleTilePlaced: (x: number, y: number) => void;
   handleTileRemoved: (x: number, y: number) => void;
   handleHover: (x: number, y: number) => void;
@@ -191,6 +192,34 @@ export function EditorProvider({
     console.log("Map deleted");
   }
 
+  function handleMapRenamed(mapId: string, newName: string) {
+    if (!newName.trim()) {
+      console.error("Map name cannot be empty");
+      return;
+    }
+
+    setState((prevState) => {
+      const mapIndex = prevState.maps.findIndex((map) => map.id === mapId);
+      if (mapIndex === -1) return prevState;
+
+      // Create a deep copy of the maps array
+      const newMaps = [...prevState.maps];
+
+      // Update the map name
+      newMaps[mapIndex] = {
+        ...newMaps[mapIndex],
+        name: newName.trim(),
+      };
+
+      return {
+        ...prevState,
+        maps: newMaps,
+      };
+    });
+
+    console.log(`Map renamed to "${newName}"`);
+  }
+
   function handleTilePlaced(x: number, y: number) {
     if (!state.selectedMapId || !state.selectedSpriteId) return;
 
@@ -319,6 +348,7 @@ export function EditorProvider({
     handleNewMap,
     handleMapSelected,
     handleMapDeleted,
+    handleMapRenamed,
     handleTilePlaced,
     handleTileRemoved,
     handleHover,
