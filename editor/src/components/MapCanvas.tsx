@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useRef, useState } from "react";
-import { DISPLAY_SCALE, Point, Sprite, TILE_SIZE, TileMap } from "../models";
+import { DISPLAY_SCALE, TILE_SIZE } from "../constants";
+import { Point, Sprite, TileMap } from "../models";
 
 interface MapCanvasProps {
   map?: TileMap;

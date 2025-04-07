@@ -1,40 +1,90 @@
-import React, { ReactElement, RefObject } from "react";
-import { EditorState } from "../models";
+import React, { ReactElement, useEffect, useState } from "react";
+import { useEditor } from "../context/EditorContext";
+import { loadSidebarWidth, saveSidebarWidth } from "../storage";
 import MapList from "./MapList";
 import SpriteSelector from "./SpriteSelector";
 
-interface SidebarProps {
-  state: EditorState;
-  leftPanelRef: RefObject<HTMLDivElement>;
-  onResizerMouseDown: (e: React.MouseEvent) => void;
-  onSpritesheetUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSpriteSelected: (spriteId: number) => void;
-  onNewMap: () => void;
-  onMapSelected: (mapId: string) => void;
-  onMapDeleted: (mapId: string) => void;
-  onSave: () => void;
-  onLoad: () => void;
-  onExport: () => void;
-  onClear: () => void;
-}
+// Sidebar width configuration
+const SIDEBAR_CONFIG = {
+  DEFAULT_WIDTH: 300,
+  MIN_WIDTH: 200,
+  MAX_WIDTH: 1000,
+};
 
-function Sidebar({
-  state,
-  leftPanelRef,
-  onResizerMouseDown,
-  onSpritesheetUpload,
-  onSpriteSelected,
-  onNewMap,
-  onMapSelected,
-  onMapDeleted,
-  onSave,
-  onLoad,
-  onExport,
-  onClear,
-}: SidebarProps): ReactElement {
+function Sidebar(): ReactElement {
+  const {
+    state,
+    handleSpritesheetUpload,
+    handleSpriteSelected,
+    handleNewMap,
+    handleMapSelected,
+    handleMapDeleted,
+    handleSave,
+    handleLoad,
+    handleExport,
+    handleClear,
+  } = useEditor();
+
+  const [width, setWidth] = useState(SIDEBAR_CONFIG.DEFAULT_WIDTH);
+  const [resizing, setResizing] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+
+  // Load saved sidebar width on mount
+  useEffect(() => {
+    const savedWidth = loadSidebarWidth();
+    if (savedWidth) {
+      // Ensure the width is within constraints
+      const constrainedWidth = Math.max(
+        SIDEBAR_CONFIG.MIN_WIDTH,
+        Math.min(SIDEBAR_CONFIG.MAX_WIDTH, savedWidth)
+      );
+      setWidth(constrainedWidth);
+    }
+  }, []);
+
+  // Handle resizing
+  useEffect(() => {
+    if (!resizing) return;
+
+    function handleMouseMove(e: MouseEvent) {
+      const newWidth = startWidth + (e.clientX - startX);
+
+      // Apply min and max constraints
+      const constrainedWidth = Math.max(
+        SIDEBAR_CONFIG.MIN_WIDTH,
+        Math.min(SIDEBAR_CONFIG.MAX_WIDTH, newWidth)
+      );
+
+      setWidth(constrainedWidth);
+    }
+
+    function handleMouseUp() {
+      setResizing(false);
+
+      // Save the sidebar width when resizing is done
+      saveSidebarWidth(width);
+    }
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resizing, startX, startWidth, width]);
+
+  function handleResizerMouseDown(e: React.MouseEvent) {
+    e.preventDefault(); // Prevent text selection during resize
+    setResizing(true);
+    setStartX(e.clientX);
+    setStartWidth(width);
+  }
+
   return (
-    <div className="left-panel" ref={leftPanelRef}>
-      <div className="resizer" onMouseDown={onResizerMouseDown}></div>
+    <div className="left-panel" style={{ width: `${width}px` }}>
+      <div className="resizer" onMouseDown={handleResizerMouseDown}></div>
 
       <div className="panel-section">
         <h3>Spritesheet</h3>
@@ -42,7 +92,7 @@ function Sidebar({
           type="file"
           accept="image/*"
           className="file-input"
-          onChange={onSpritesheetUpload}
+          onChange={handleSpritesheetUpload}
         />
       </div>
 
@@ -52,28 +102,28 @@ function Sidebar({
           spritesheet={state.spritesheet}
           sprites={state.sprites}
           selectedSpriteId={state.selectedSpriteId}
-          onSpriteSelected={onSpriteSelected}
+          onSpriteSelected={handleSpriteSelected}
         />
       </div>
 
       <div className="panel-section">
         <h3>Maps</h3>
-        <button onClick={onNewMap}>New Map</button>
+        <button onClick={handleNewMap}>New Map</button>
         <MapList
           maps={state.maps}
           selectedMapId={state.selectedMapId}
-          onMapSelected={onMapSelected}
-          onMapDeleted={onMapDeleted}
+          onMapSelected={handleMapSelected}
+          onMapDeleted={handleMapDeleted}
         />
       </div>
 
       <div className="panel-section">
         <h3>Actions</h3>
         <div className="button-group">
-          <button onClick={onSave}>Save</button>
-          <button onClick={onLoad}>Load</button>
-          <button onClick={onExport}>Export</button>
-          <button onClick={onClear} className="danger">
+          <button onClick={handleSave}>Save</button>
+          <button onClick={handleLoad}>Load</button>
+          <button onClick={handleExport}>Export</button>
+          <button onClick={handleClear} className="danger">
             Clear All
           </button>
         </div>

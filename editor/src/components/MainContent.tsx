@@ -1,24 +1,17 @@
-import { ReactElement } from "react";
-import { EditorState, TileMap } from "../models";
+import React, { ReactElement } from "react";
+import { useEditor } from "../context/EditorContext";
 import MapCanvas from "./MapCanvas";
 
-interface MainContentProps {
-  state: EditorState;
-  selectedMap?: TileMap;
-  onTilePlaced: (x: number, y: number) => void;
-  onTileRemoved: (x: number, y: number) => void;
-  onHover: (x: number, y: number) => void;
-  onMouseLeave: () => void;
-}
+function MainContent(): ReactElement {
+  const {
+    state,
+    selectedMap,
+    handleTilePlaced,
+    handleTileRemoved,
+    handleHover,
+    handleMouseLeave,
+  } = useEditor();
 
-function MainContent({
-  state,
-  selectedMap,
-  onTilePlaced,
-  onTileRemoved,
-  onHover,
-  onMouseLeave,
-}: MainContentProps): ReactElement {
   return (
     <div className="right-panel">
       <h2>{selectedMap ? selectedMap.name : "No Map Selected"}</h2>
@@ -31,10 +24,10 @@ function MainContent({
             sprites={state.sprites}
             selectedSpriteId={state.selectedSpriteId}
             hoverPosition={state.hoverPosition}
-            onTilePlaced={onTilePlaced}
-            onTileRemoved={onTileRemoved}
-            onHover={onHover}
-            onMouseLeave={onMouseLeave}
+            onTilePlaced={handleTilePlaced}
+            onTileRemoved={handleTileRemoved}
+            onHover={handleHover}
+            onMouseLeave={handleMouseLeave}
           />
         </div>
       ) : (

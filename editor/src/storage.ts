@@ -5,6 +5,7 @@ const STORAGE_KEY = "epd-rpg-tilemap-editor";
 const SPRITESHEET_KEY = `${STORAGE_KEY}-spritesheet`;
 const SPRITESHEET_DATA_KEY = `${STORAGE_KEY}-spritesheet-data`;
 const SIDEBAR_WIDTH_KEY = `${STORAGE_KEY}-sidebar-width`;
+const SPRITE_SCALE_KEY = `${STORAGE_KEY}-sprite-scale`;
 
 // Save the spritesheet as a data URL
 export async function saveSpritesheetToStorage(file: File): Promise<string> {
@@ -140,10 +141,34 @@ export function loadSidebarWidth(): number | null {
   }
 }
 
+// Save sprite scale to localStorage
+export function saveSpriteScale(scale: number): void {
+  try {
+    localStorage.setItem(SPRITE_SCALE_KEY, scale.toString());
+  } catch (error) {
+    console.error("Failed to save sprite scale:", error);
+  }
+}
+
+// Load sprite scale from localStorage
+export function loadSpriteScale(): number | null {
+  try {
+    const scaleStr = localStorage.getItem(SPRITE_SCALE_KEY);
+    if (!scaleStr) return null;
+
+    const scale = parseFloat(scaleStr);
+    return isNaN(scale) ? null : scale;
+  } catch (error) {
+    console.error("Failed to load sprite scale:", error);
+    return null;
+  }
+}
+
 // Clear all stored data
 export function clearStoredData(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SPRITESHEET_KEY);
   localStorage.removeItem(SPRITESHEET_DATA_KEY);
   localStorage.removeItem(SIDEBAR_WIDTH_KEY);
+  localStorage.removeItem(SPRITE_SCALE_KEY);
 }

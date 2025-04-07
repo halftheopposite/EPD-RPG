@@ -1,5 +1,3 @@
-// Data models for the tilemap editor
-
 export interface Point {
   x: number;
   y: number;
@@ -41,7 +39,6 @@ export interface EditorState {
   hoverPosition: Point | null;
 }
 
-// Default state for the editor
 export const defaultEditorState: EditorState = {
   spritesheet: {
     image: null,
@@ -55,9 +52,3 @@ export const defaultEditorState: EditorState = {
   selectedMapId: null,
   hoverPosition: null,
 };
-
-// Constants
-export const TILE_SIZE = 16; // 16x16 pixels per tile
-export const MAP_WIDTH = 12; // 12 tiles wide
-export const MAP_HEIGHT = 12; // 12 tiles high
-export const DISPLAY_SCALE = 2; // Scale factor for display

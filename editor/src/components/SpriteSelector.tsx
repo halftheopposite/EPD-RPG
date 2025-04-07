@@ -1,5 +1,7 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import { Sprite, TILE_SIZE } from "../models";
+import { TILE_SIZE } from "../constants";
+import { Sprite } from "../models";
+import { loadSpriteScale, saveSpriteScale } from "../storage";
 
 interface SpriteSelectorProps {
   spritesheet: {
@@ -21,6 +23,14 @@ function SpriteSelector({
 }: SpriteSelectorProps): ReactElement {
   const [scale, setScale] = useState(1); // Default scale is 1 (normal size)
   const [spritesUrls, setSpritesUrls] = useState<Record<number, string>>({});
+
+  // Load saved sprite scale on mount
+  useEffect(() => {
+    const savedScale = loadSpriteScale();
+    if (savedScale !== null) {
+      setScale(savedScale);
+    }
+  }, []);
 
   // Generate individual sprite images when spritesheet changes
   useEffect(() => {
@@ -69,6 +79,9 @@ function SpriteSelector({
   function handleScaleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const newScale = parseFloat(e.target.value);
     setScale(newScale);
+
+    // Save the scale to localStorage
+    saveSpriteScale(newScale);
   }
 
   // Calculate the number of columns based on scale

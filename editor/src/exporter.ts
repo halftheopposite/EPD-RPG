@@ -1,5 +1,5 @@
-// Export functionality for the tilemap editor
-import { EditorState, TILE_SIZE } from "./models";
+import { TILE_SIZE } from "./constants";
+import { EditorState } from "./models";
 
 // Generate maps.h file content
 export function generateMapsHeader(state: EditorState): string {
@@ -69,10 +69,7 @@ export function generateSpritesHeader(state: EditorState): string {
   const ctx = canvas.getContext("2d");
 
   if (!ctx || !state.spritesheet.image) {
-    return (
-      content +
-      "void Paint_DrawBitMapAt(UBYTE *frameBuffer, const unsigned char *bitmap, int x, int y, int width, int height);\n\n#endif"
-    );
+    return content + "#endif";
   }
 
   // Create a temporary canvas for the spritesheet
@@ -82,10 +79,7 @@ export function generateSpritesHeader(state: EditorState): string {
   const tempCtx = tempCanvas.getContext("2d");
 
   if (!tempCtx) {
-    return (
-      content +
-      "void Paint_DrawBitMapAt(UBYTE *frameBuffer, const unsigned char *bitmap, int x, int y, int width, int height);\n\n#endif"
-    );
+    return content + "#endif";
   }
 
   // Draw the spritesheet to the temporary canvas
@@ -156,8 +150,7 @@ export function generateSpritesHeader(state: EditorState): string {
     content += "};\n\n";
   });
 
-  // Add the drawing function
-  content += `void Paint_DrawBitMapAt(UBYTE *frameBuffer, const unsigned char *bitmap, int x, int y, int width, int height);\n\n`;
+  // No drawing function needed
 
   content += "#endif";
   return content;
