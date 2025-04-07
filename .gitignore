@@ -4,9 +4,3 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
-
-# Node
-node_modules/
-dist/
-.DS_Store
-bundle.*
