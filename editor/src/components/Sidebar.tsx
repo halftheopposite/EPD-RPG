@@ -1,15 +1,10 @@
 import React, { ReactElement, useEffect, useState } from "react";
+import { SIDEBAR_CONFIG } from "../constants";
 import { useEditor } from "../context/EditorContext";
 import { loadSidebarWidth, saveSidebarWidth } from "../storage";
 import MapList from "./MapList";
 import SpriteSelector from "./SpriteSelector";
-
-// Sidebar width configuration
-const SIDEBAR_CONFIG = {
-  DEFAULT_WIDTH: 300,
-  MIN_WIDTH: 200,
-  MAX_WIDTH: 1000,
-};
+import TileSizeSelector from "./TileSizeSelector";
 
 function Sidebar(): ReactElement {
   const {
@@ -89,6 +84,7 @@ function Sidebar(): ReactElement {
 
       <div className="panel-section">
         <h3>Spritesheet</h3>
+        <TileSizeSelector />
         <input
           type="file"
           accept="image/*"

@@ -1,11 +1,6 @@
 // Local storage handling for the tilemap editor
+import { STORAGE_KEYS } from "./constants";
 import { EditorState, defaultEditorState } from "./models";
-
-const STORAGE_KEY = "epd-rpg-tilemap-editor";
-const SPRITESHEET_KEY = `${STORAGE_KEY}-spritesheet`;
-const SPRITESHEET_DATA_KEY = `${STORAGE_KEY}-spritesheet-data`;
-const SIDEBAR_WIDTH_KEY = `${STORAGE_KEY}-sidebar-width`;
-const SPRITE_SCALE_KEY = `${STORAGE_KEY}-sprite-scale`;
 
 // Save the spritesheet as a data URL
 export async function saveSpritesheetToStorage(file: File): Promise<string> {
@@ -14,7 +9,7 @@ export async function saveSpritesheetToStorage(file: File): Promise<string> {
     reader.onload = () => {
       try {
         const dataUrl = reader.result as string;
-        localStorage.setItem(SPRITESHEET_KEY, dataUrl);
+        localStorage.setItem(STORAGE_KEYS.SPRITESHEET, dataUrl);
 
         // Save spritesheet metadata
         const spritesheetData = {
@@ -24,91 +19,95 @@ export async function saveSpritesheetToStorage(file: File): Promise<string> {
           type: file.type,
         };
         localStorage.setItem(
-          SPRITESHEET_DATA_KEY,
+          STORAGE_KEYS.SPRITESHEET_DATA,
           JSON.stringify(spritesheetData)
         );
 
         resolve(dataUrl);
       } catch (error) {
-        console.error("Failed to save spritesheet:", error);
         reject(error);
       }
     };
-    reader.onerror = () => reject(new Error("Failed to read spritesheet file"));
+    reader.onerror = () => {
+      reject(new Error("Failed to read file"));
+    };
     reader.readAsDataURL(file);
   });
 }
 
 // Load the spritesheet from storage
 export async function loadSpritesheetFromStorage(): Promise<{
-  image: HTMLImageElement;
-  filename: string;
+  dataUrl: string;
+  metadata: {
+    filename: string;
+    lastModified: number;
+    size: number;
+    type: string;
+  };
 } | null> {
-  const dataUrl = localStorage.getItem(SPRITESHEET_KEY);
-  const spritesheetDataJson = localStorage.getItem(SPRITESHEET_DATA_KEY);
+  const dataUrl = localStorage.getItem(STORAGE_KEYS.SPRITESHEET);
+  const metadataStr = localStorage.getItem(STORAGE_KEYS.SPRITESHEET_DATA);
 
-  if (!dataUrl || !spritesheetDataJson) return null;
+  if (!dataUrl || !metadataStr) {
+    return null;
+  }
 
   try {
-    const spritesheetData = JSON.parse(spritesheetDataJson);
-    const image = new Image();
-    image.src = dataUrl;
-
-    // Wait for the image to load
-    await new Promise<void>((resolve, reject) => {
-      image.onload = () => resolve();
-      image.onerror = () =>
-        reject(new Error("Failed to load spritesheet image"));
-    });
-
-    return {
-      image,
-      filename: spritesheetData.filename || "spritesheet.png",
-    };
+    const metadata = JSON.parse(metadataStr);
+    return { dataUrl, metadata };
   } catch (error) {
-    console.error("Failed to load spritesheet from storage:", error);
+    console.error("Failed to parse spritesheet metadata:", error);
     return null;
   }
 }
 
-// Save editor state to localStorage
+// Save the editor state to localStorage
 export async function saveEditorState(state: EditorState): Promise<void> {
-  // Create a copy of the state without the image
-  const stateCopy: EditorState = {
+  // Create a copy of the state without the image (which can't be serialized)
+  const stateToSave = {
     ...state,
     spritesheet: {
       ...state.spritesheet,
-      image: null,
+      image: null, // Don't save the image, it's saved separately
     },
   };
 
-  // Store the state
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateCopy));
-    return;
+    localStorage.setItem(
+      STORAGE_KEYS.EDITOR_STATE,
+      JSON.stringify(stateToSave)
+    );
   } catch (error) {
     console.error("Failed to save editor state:", error);
-    throw new Error("Failed to save editor state. Storage might be full.");
+    throw error;
   }
 }
 
-// Load editor state from localStorage
+// Load the editor state from localStorage
 export async function loadEditorState(): Promise<EditorState> {
+  const stateStr = localStorage.getItem(STORAGE_KEYS.EDITOR_STATE);
+  if (!stateStr) {
+    return { ...defaultEditorState };
+  }
+
   try {
-    const stateJson = localStorage.getItem(STORAGE_KEY);
-    if (!stateJson) {
-      return { ...defaultEditorState };
-    }
+    const state = JSON.parse(stateStr) as EditorState;
 
-    const state = JSON.parse(stateJson) as EditorState;
+    // Load the spritesheet image if available
+    const spritesheet = await loadSpritesheetFromStorage();
+    if (spritesheet) {
+      const image = new Image();
+      image.src = spritesheet.dataUrl;
 
-    // Load the spritesheet
-    const spritesheetData = await loadSpritesheetFromStorage();
-    if (spritesheetData) {
-      state.spritesheet.image = spritesheetData.image;
-      state.spritesheet.filename = spritesheetData.filename;
-      state.spritesheet.width = spritesheetData.image.width;
-      state.spritesheet.height = spritesheetData.image.height;
+      // Wait for the image to load
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () =>
+          reject(new Error("Failed to load spritesheet image"));
+      });
+
+      // Update the state with the loaded image
+      state.spritesheet.image = image;
     }
 
     return state;
@@ -121,7 +120,7 @@ export async function loadEditorState(): Promise<EditorState> {
 // Save sidebar width to localStorage
 export function saveSidebarWidth(width: number): void {
   try {
-    localStorage.setItem(SIDEBAR_WIDTH_KEY, width.toString());
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, width.toString());
   } catch (error) {
     console.error("Failed to save sidebar width:", error);
   }
@@ -130,7 +129,7 @@ export function saveSidebarWidth(width: number): void {
 // Load sidebar width from localStorage
 export function loadSidebarWidth(): number | null {
   try {
-    const widthStr = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    const widthStr = localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH);
     if (!widthStr) return null;
 
     const width = parseInt(widthStr, 10);
@@ -144,7 +143,7 @@ export function loadSidebarWidth(): number | null {
 // Save sprite scale to localStorage
 export function saveSpriteScale(scale: number): void {
   try {
-    localStorage.setItem(SPRITE_SCALE_KEY, scale.toString());
+    localStorage.setItem(STORAGE_KEYS.SPRITE_SCALE, scale.toString());
   } catch (error) {
     console.error("Failed to save sprite scale:", error);
   }
@@ -153,7 +152,7 @@ export function saveSpriteScale(scale: number): void {
 // Load sprite scale from localStorage
 export function loadSpriteScale(): number | null {
   try {
-    const scaleStr = localStorage.getItem(SPRITE_SCALE_KEY);
+    const scaleStr = localStorage.getItem(STORAGE_KEYS.SPRITE_SCALE);
     if (!scaleStr) return null;
 
     const scale = parseFloat(scaleStr);
@@ -166,9 +165,9 @@ export function loadSpriteScale(): number | null {
 
 // Clear all stored data
 export function clearStoredData(): void {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(SPRITESHEET_KEY);
-  localStorage.removeItem(SPRITESHEET_DATA_KEY);
-  localStorage.removeItem(SIDEBAR_WIDTH_KEY);
-  localStorage.removeItem(SPRITE_SCALE_KEY);
+  localStorage.removeItem(STORAGE_KEYS.EDITOR_STATE);
+  localStorage.removeItem(STORAGE_KEYS.SPRITESHEET);
+  localStorage.removeItem(STORAGE_KEYS.SPRITESHEET_DATA);
+  localStorage.removeItem(STORAGE_KEYS.SIDEBAR_WIDTH);
+  localStorage.removeItem(STORAGE_KEYS.SPRITE_SCALE);
 }

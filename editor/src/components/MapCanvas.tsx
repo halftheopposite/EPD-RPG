@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect, useRef, useState } from "react";
-import { DISPLAY_SCALE, TILE_SIZE } from "../constants";
+import { DISPLAY_SCALE } from "../constants";
+import { useEditor } from "../context/EditorContext";
 import { Point, Sprite, TileMap } from "../models";
 
 interface MapCanvasProps {
@@ -30,15 +31,17 @@ function MapCanvas({
   onHover,
   onMouseLeave,
 }: MapCanvasProps): ReactElement {
+  const { state } = useEditor();
+  const tileSize = state.tileSize;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const lastTileRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Render the canvas whenever relevant props change
   useEffect(() => {
     renderCanvas();
-  }, [map, spritesheet, sprites, selectedSpriteId, hoverPosition]);
+  }, [map, spritesheet, sprites, selectedSpriteId, hoverPosition, tileSize]);
 
   function renderCanvas(): void {
     const canvas = canvasRef.current;
@@ -49,11 +52,11 @@ function MapCanvas({
 
     // Set canvas size with display scale
     if (map) {
-      canvas.width = map.width * TILE_SIZE * DISPLAY_SCALE;
-      canvas.height = map.height * TILE_SIZE * DISPLAY_SCALE;
+      canvas.width = map.width * tileSize * DISPLAY_SCALE;
+      canvas.height = map.height * tileSize * DISPLAY_SCALE;
     } else {
-      canvas.width = 12 * TILE_SIZE * DISPLAY_SCALE;
-      canvas.height = 12 * TILE_SIZE * DISPLAY_SCALE;
+      canvas.width = 12 * tileSize * DISPLAY_SCALE;
+      canvas.height = 12 * tileSize * DISPLAY_SCALE;
     }
 
     // Clear the canvas
@@ -90,10 +93,10 @@ function MapCanvas({
         // Draw the grid cell
         ctx.strokeStyle = "#ddd";
         ctx.strokeRect(
-          x * TILE_SIZE * DISPLAY_SCALE,
-          y * TILE_SIZE * DISPLAY_SCALE,
-          TILE_SIZE * DISPLAY_SCALE,
-          TILE_SIZE * DISPLAY_SCALE
+          x * tileSize * DISPLAY_SCALE,
+          y * tileSize * DISPLAY_SCALE,
+          tileSize * DISPLAY_SCALE,
+          tileSize * DISPLAY_SCALE
         );
 
         // If the cell has a sprite, draw it
@@ -106,10 +109,10 @@ function MapCanvas({
               sprite.y,
               sprite.width,
               sprite.height,
-              x * TILE_SIZE * DISPLAY_SCALE,
-              y * TILE_SIZE * DISPLAY_SCALE,
-              TILE_SIZE * DISPLAY_SCALE,
-              TILE_SIZE * DISPLAY_SCALE
+              x * tileSize * DISPLAY_SCALE,
+              y * tileSize * DISPLAY_SCALE,
+              tileSize * DISPLAY_SCALE,
+              tileSize * DISPLAY_SCALE
             );
           }
         }
@@ -137,10 +140,10 @@ function MapCanvas({
             sprite.y,
             sprite.width,
             sprite.height,
-            x * TILE_SIZE * DISPLAY_SCALE,
-            y * TILE_SIZE * DISPLAY_SCALE,
-            TILE_SIZE * DISPLAY_SCALE,
-            TILE_SIZE * DISPLAY_SCALE
+            x * tileSize * DISPLAY_SCALE,
+            y * tileSize * DISPLAY_SCALE,
+            tileSize * DISPLAY_SCALE,
+            tileSize * DISPLAY_SCALE
           );
 
           // Restore the context state
@@ -158,7 +161,7 @@ function MapCanvas({
     ctx.strokeStyle = "#ddd";
 
     // Draw vertical lines
-    for (let x = 0; x <= width; x += TILE_SIZE * DISPLAY_SCALE) {
+    for (let x = 0; x <= width; x += tileSize * DISPLAY_SCALE) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
@@ -166,7 +169,7 @@ function MapCanvas({
     }
 
     // Draw horizontal lines
-    for (let y = 0; y <= height; y += TILE_SIZE * DISPLAY_SCALE) {
+    for (let y = 0; y <= height; y += tileSize * DISPLAY_SCALE) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
@@ -184,10 +187,10 @@ function MapCanvas({
 
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor(
-      (event.clientX - rect.left) / (TILE_SIZE * DISPLAY_SCALE)
+      (event.clientX - rect.left) / (tileSize * DISPLAY_SCALE)
     );
     const y = Math.floor(
-      (event.clientY - rect.top) / (TILE_SIZE * DISPLAY_SCALE)
+      (event.clientY - rect.top) / (tileSize * DISPLAY_SCALE)
     );
 
     // Check if the position is within the map bounds
@@ -274,11 +277,11 @@ function MapCanvas({
 
   // Calculate canvas dimensions
   const canvasWidth = map
-    ? map.width * TILE_SIZE * DISPLAY_SCALE
-    : 12 * TILE_SIZE * DISPLAY_SCALE;
+    ? map.width * tileSize * DISPLAY_SCALE
+    : 12 * tileSize * DISPLAY_SCALE;
   const canvasHeight = map
-    ? map.height * TILE_SIZE * DISPLAY_SCALE
-    : 12 * TILE_SIZE * DISPLAY_SCALE;
+    ? map.height * tileSize * DISPLAY_SCALE
+    : 12 * tileSize * DISPLAY_SCALE;
 
   return (
     <canvas
@@ -290,7 +293,7 @@ function MapCanvas({
       onMouseUp={handleCanvasMouseUp}
       onMouseLeave={handleCanvasMouseLeave}
       onContextMenu={handleContextMenu}
-      style={{ imageRendering: "pixelated", cursor: "crosshair" }}
+      style={{ imageRendering: "pixelated", cursor: "pointer" }}
     />
   );
 }

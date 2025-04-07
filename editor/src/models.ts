@@ -1,11 +1,8 @@
+import { DEFAULT_TILE_SIZE } from "./constants";
+
 export interface Point {
   x: number;
   y: number;
-}
-
-export interface Size {
-  width: number;
-  height: number;
 }
 
 export interface Sprite {
@@ -14,7 +11,6 @@ export interface Sprite {
   y: number;
   width: number;
   height: number;
-  imageData?: ImageData;
 }
 
 export interface TileMap {
@@ -22,7 +18,7 @@ export interface TileMap {
   name: string;
   width: number;
   height: number;
-  tiles: number[][]; // 2D array of sprite IDs
+  tiles: number[][];
 }
 
 export interface EditorState {
@@ -37,6 +33,7 @@ export interface EditorState {
   selectedSpriteId: number | null;
   selectedMapId: string | null;
   hoverPosition: Point | null;
+  tileSize: number;
 }
 
 export const defaultEditorState: EditorState = {
@@ -51,4 +48,5 @@ export const defaultEditorState: EditorState = {
   selectedSpriteId: null,
   selectedMapId: null,
   hoverPosition: null,
+  tileSize: DEFAULT_TILE_SIZE,
 };

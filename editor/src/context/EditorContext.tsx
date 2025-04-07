@@ -6,6 +6,12 @@ import React, {
   useState,
 } from "react";
 import {
+  MAP_HEIGHT,
+  MAP_WIDTH,
+  MAX_TILE_SIZE,
+  MIN_TILE_SIZE,
+} from "../constants";
+import {
   downloadFile,
   generateMapsHeader,
   generateSpritesHeader,
@@ -17,11 +23,6 @@ import {
   saveEditorState,
   saveSpritesheetToStorage,
 } from "../storage";
-
-// Constants for map and tile dimensions
-const MAP_WIDTH = 12;
-const MAP_HEIGHT = 12;
-const TILE_SIZE = 16;
 
 interface EditorContextType {
   state: EditorState;
@@ -42,6 +43,7 @@ interface EditorContextType {
   handleLoad: () => Promise<void>;
   handleExport: () => void;
   handleClear: () => void;
+  handleTileSizeChange: (size: number) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -102,18 +104,18 @@ export function EditorProvider({
         let id = 1; // Start from 1, 0 is reserved for empty tiles
 
         // Calculate number of sprites in the spritesheet
-        const spritesWide = Math.floor(image.width / TILE_SIZE);
-        const spritesHigh = Math.floor(image.height / TILE_SIZE);
+        const spritesWide = Math.floor(image.width / prevState.tileSize);
+        const spritesHigh = Math.floor(image.height / prevState.tileSize);
 
         // Generate sprites
         for (let y = 0; y < spritesHigh; y++) {
           for (let x = 0; x < spritesWide; x++) {
             sprites.push({
               id,
-              x: x * TILE_SIZE,
-              y: y * TILE_SIZE,
-              width: TILE_SIZE,
-              height: TILE_SIZE,
+              x: x * prevState.tileSize,
+              y: y * prevState.tileSize,
+              width: prevState.tileSize,
+              height: prevState.tileSize,
             });
             id++;
           }
@@ -218,6 +220,56 @@ export function EditorProvider({
     });
 
     console.log(`Map renamed to "${newName}"`);
+  }
+
+  function handleTileSizeChange(size: number) {
+    if (size < MIN_TILE_SIZE || size > MAX_TILE_SIZE) {
+      console.error(
+        `Tile size must be between ${MIN_TILE_SIZE} and ${MAX_TILE_SIZE} pixels`
+      );
+      return;
+    }
+
+    setState((prevState) => {
+      // If there's a spritesheet loaded, regenerate the sprites with the new tile size
+      if (prevState.spritesheet.image) {
+        const sprites = [];
+        let id = 1; // Start from 1, 0 is reserved for empty tiles
+
+        // Calculate number of sprites in the spritesheet
+        const spritesWide = Math.floor(prevState.spritesheet.width / size);
+        const spritesHigh = Math.floor(prevState.spritesheet.height / size);
+
+        // Generate sprites
+        for (let y = 0; y < spritesHigh; y++) {
+          for (let x = 0; x < spritesWide; x++) {
+            sprites.push({
+              id,
+              x: x * size,
+              y: y * size,
+              width: size,
+              height: size,
+            });
+            id++;
+          }
+        }
+
+        return {
+          ...prevState,
+          tileSize: size,
+          sprites,
+          selectedSpriteId: null, // Reset selected sprite when tile size changes
+        };
+      }
+
+      // If no spritesheet is loaded, just update the tile size
+      return {
+        ...prevState,
+        tileSize: size,
+      };
+    });
+
+    console.log(`Tile size changed to ${size}px`);
   }
 
   function handleTilePlaced(x: number, y: number) {
@@ -357,6 +409,7 @@ export function EditorProvider({
     handleLoad,
     handleExport,
     handleClear,
+    handleTileSizeChange,
   };
 
   return (

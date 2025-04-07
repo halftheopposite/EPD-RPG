@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import { TILE_SIZE } from "../constants";
+import { useEditor } from "../context/EditorContext";
 import { Sprite } from "../models";
 import { loadSpriteScale, saveSpriteScale } from "../storage";
 
@@ -21,6 +21,9 @@ function SpriteSelector({
   selectedSpriteId,
   onSpriteSelected,
 }: SpriteSelectorProps): ReactElement {
+  const { state } = useEditor();
+  const tileSize = state.tileSize;
+
   const [scale, setScale] = useState(1); // Default scale is 1 (normal size)
   const [spritesUrls, setSpritesUrls] = useState<Record<number, string>>({});
 
@@ -32,7 +35,7 @@ function SpriteSelector({
     }
   }, []);
 
-  // Generate individual sprite images when spritesheet changes
+  // Generate individual sprite images when spritesheet changes or tile size changes
   useEffect(() => {
     if (!spritesheet.image || sprites.length === 0) {
       setSpritesUrls({});
@@ -41,8 +44,8 @@ function SpriteSelector({
 
     // Create a temporary canvas to extract individual sprites
     const canvas = document.createElement("canvas");
-    canvas.width = TILE_SIZE;
-    canvas.height = TILE_SIZE;
+    canvas.width = tileSize;
+    canvas.height = tileSize;
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
@@ -54,7 +57,7 @@ function SpriteSelector({
     const urls: Record<number, string> = {};
     sprites.forEach((sprite) => {
       // Clear the canvas
-      ctx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
+      ctx.clearRect(0, 0, tileSize, tileSize);
 
       // Draw just this sprite
       ctx.drawImage(
@@ -65,8 +68,8 @@ function SpriteSelector({
         sprite.height,
         0,
         0,
-        TILE_SIZE,
-        TILE_SIZE
+        tileSize,
+        tileSize
       );
 
       // Convert to data URL
@@ -74,7 +77,7 @@ function SpriteSelector({
     });
 
     setSpritesUrls(urls);
-  }, [spritesheet.image, sprites]);
+  }, [spritesheet.image, sprites, tileSize]);
 
   function handleScaleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const newScale = parseFloat(e.target.value);
