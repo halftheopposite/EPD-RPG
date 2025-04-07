@@ -258,7 +258,6 @@ button.danger:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 1.5rem 0;
   flex: 1;
   background-color: white;
   border-radius: 8px;
@@ -366,7 +365,6 @@ canvas {
   margin-bottom: 1rem;
   color: var(--secondary-color);
   font-weight: 600;
-  border-bottom: 2px solid var(--primary-color);
   padding-bottom: 0.5rem;
   display: inline-block;
 }
