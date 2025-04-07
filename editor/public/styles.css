@@ -43,7 +43,7 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: 100%;
+  height: calc(100% - 60px); /* Adjusted for header height */
 }
 
 .left-panel {
@@ -388,6 +388,81 @@ canvas {
   line-height: 1.6;
   opacity: 0.8;
 }
+
+/* Header Styles */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header {
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding-left: 16px;
+  padding-right: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--sidebar-header);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.header-description {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.header-links {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.header-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  font-size: 0.8rem;
+}
+
+.header-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Container style moved to existing .container class */
 
 /* Tile Size Selector */
 .tile-size-selector {
