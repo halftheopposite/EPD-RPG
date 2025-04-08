@@ -4,6 +4,7 @@
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include "assets/maps.h"
 #include "config.h"
+#include "text.h"
 #include "tilemap.h"
 #include "ui.h"
 
@@ -21,10 +22,6 @@ void setup()
   // Initialize the display
   display.init();
 
-  // Set text color, size, and font
-  display.setTextColor(GxEPD_BLACK);
-  display.setFont(&FreeMonoBold9pt7b);
-
   // Clear the display with white background
   display.setFullWindow();
   display.firstPage();
@@ -35,6 +32,7 @@ void setup()
 
     UI_Draw();
     Tilemap_Draw(MAP_HOME_1, GAME_START_X, GAME_START_Y);
+    Text_DrawBox("Hey!", 2, 6);
   } while (display.nextPage());
 
   // Put the display to sleep to save power
