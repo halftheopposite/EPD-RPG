@@ -3,6 +3,14 @@
 
 #include <GxEPD2_BW.h> // GxEPD2 library for black and white displays
 
+// Define pins for the e-paper display
+#define EPD_CS 15
+#define EPD_DC 27
+#define EPD_RST 26
+#define EPD_BUSY 25
+#define EPD_SCK 13  // Match the Waveshare library pin
+#define EPD_MOSI 14 // Match the Waveshare library pin
+
 // Forward declaration of the display class
 extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
 

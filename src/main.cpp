@@ -7,14 +7,6 @@
 #include "tilemap.h"
 #include "ui.h"
 
-// Define pins for the e-paper display
-#define EPD_CS 15
-#define EPD_DC 27
-#define EPD_RST 26
-#define EPD_BUSY 25
-#define EPD_SCK 13  // Match the Waveshare library pin
-#define EPD_MOSI 14 // Match the Waveshare library pin
-
 // Create the display instance - using GxEPD2_154_D67 for 1.54" b/w display (200x200)
 // This is for the Waveshare 1.54" V2 black and white e-paper display
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
