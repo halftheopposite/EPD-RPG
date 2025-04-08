@@ -38,8 +38,8 @@ void setup()
 
   // Draw
   UI_Draw(frameBuffer);
-  Tilemap_Draw(frameBuffer, MAP_TEST, GAME_TL_X, GAME_TL_Y);
-  Player_Draw(frameBuffer, 2, 2);
+  // Tilemap_Draw(frameBuffer, MAP_HOME_1, GAME_TL_X, GAME_TL_Y);
+  Player_Draw(frameBuffer, 0, 0);
 
   // Send the framebuffer to the display
   EPD_1IN54_V2_Display(frameBuffer);
@@ -48,8 +48,8 @@ void setup()
   // DEV_Delay_ms(5000);
 
   // Cleanup the display
-  EPD_1IN54_V2_Init();
-  EPD_1IN54_V2_Clear();
+  // EPD_1IN54_V2_Init();
+  // EPD_1IN54_V2_Clear();
 
   // Put the device to sleep
   EPD_1IN54_V2_Sleep();

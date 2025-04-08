@@ -1,15 +1,13 @@
 #include "player.h"
 #include "GUI_Paint.h"
+#include "assets/sprites.h"
 #include "config.h"
 #include "draw.h"
 
-const unsigned char SquidImage[] PROGMEM = {
-    0xff, 0xff, 0xf0, 0xfb, 0xf8, 0x0d, 0xff, 0xf5, 0xff, 0x85, 0xe1, 0x1d, 0xc4, 0x03, 0xc0, 0x1f,
-    0xc0, 0x1f, 0xc4, 0x03, 0xe1, 0x1d, 0xff, 0x85, 0xff, 0xf5, 0xf8, 0x0d, 0xf0, 0xfb, 0xff, 0xff};
-
 void Player_Draw(UBYTE *frameBuffer, int tileX, int tileY)
 {
-    int pixelX = GAME_TL_X + (tileX * TILE_SIZE);
-    int pixelY = GAME_TL_Y + (tileY * TILE_SIZE);
-    Paint_DrawBitMapAt(frameBuffer, SquidImage, pixelX, pixelY, PLAYER_SIZE, PLAYER_SIZE);
+    int x = GAME_TL_X + (tileX * TILE_SIZE);
+    int y = GAME_TL_Y + (tileY * TILE_SIZE);
+
+    Paint_DrawBitMapAt(frameBuffer, SPRITE_344, x, y, PLAYER_SIZE, PLAYER_SIZE);
 }
