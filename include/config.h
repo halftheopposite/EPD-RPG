@@ -1,11 +1,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "EPD.h" // Needed for EPD_1IN54_V2_WIDTH and HEIGHT
+#include <GxEPD2_BW.h> // GxEPD2 library for black and white displays
 
-// Screen
-#define SCREEN_WIDTH EPD_1IN54_V2_WIDTH
-#define SCREEN_HEIGHT EPD_1IN54_V2_HEIGHT
+// Forward declaration of the display class
+extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
+
+// Screen dimensions for 1.54" e-paper display
+#define SCREEN_WIDTH 200
+#define SCREEN_HEIGHT 200
 #define SCREEN_PADDING 4
 
 // Tile

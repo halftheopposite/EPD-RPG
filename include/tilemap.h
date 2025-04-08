@@ -1,8 +1,9 @@
 #ifndef TILEMAP_H
 #define TILEMAP_H
 
-#include "DEV_Config.h" // Needed for UBYTE type
+#include <Arduino.h>
 
-void Tilemap_Draw(UBYTE *frameBuffer, const unsigned int *mapData, int startX, int startY);
+void Tilemap_Draw(const unsigned int *mapData, int startX, int startY);
+uint8_t const *Tilemap_GetSpriteForTileType(unsigned int tileType);
 
 #endif

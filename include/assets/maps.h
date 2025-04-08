@@ -1,7 +1,7 @@
 #ifndef MAPS_H
 #define MAPS_H
 
-const unsigned int MAP_HOME_1[] PROGMEM = {
+const unsigned int MAP_HOME_1[] = {
     1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 99, 1, 3, 1, 594, 595, 596, 1,
     1, 51, 50, 1, 1, 2, 4, 1, 645, 644, 645, 1,

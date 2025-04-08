@@ -1,11 +1,29 @@
 #include "tilemap.h"
-#include "GUI_Paint.h"
 #include "assets/sprites.h"
 #include "config.h"
-#include "draw.h"
 
-// Helper function to get the sprite data for a given tile type
-const unsigned char *GetSpriteForTileType(unsigned int tileType)
+void Tilemap_Draw(const unsigned int *mapData, int startX, int startY)
+{
+    for (int y = 0; y < MAP_HEIGHT; y++)
+    {
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            int tileIndex = y * MAP_WIDTH + x;
+            unsigned int tileType = mapData[tileIndex];
+
+            // Calculate the pixel position for this tile
+            int pixelX = startX + (x * TILE_SIZE);
+            int pixelY = startY + (y * TILE_SIZE);
+
+            // Get the sprite for this tile type
+            const unsigned char *sprite = Tilemap_GetSpriteForTileType(tileType);
+
+            display.drawBitmap(pixelX, pixelY, sprite, TILE_SIZE, TILE_SIZE, GxEPD_BLACK);
+        }
+    }
+}
+
+const uint8_t *Tilemap_GetSpriteForTileType(unsigned int tileType)
 {
     // This avoids switch statement limitations with large values
     if (tileType == 1)
@@ -46,26 +64,4 @@ const unsigned char *GetSpriteForTileType(unsigned int tileType)
         return SPRITE_645;
 
     return SPRITE_1;
-}
-
-void Tilemap_Draw(UBYTE *frameBuffer, const unsigned int *mapData, int startX, int startY)
-{
-    for (int y = 0; y < MAP_HEIGHT; y++)
-    {
-        for (int x = 0; x < MAP_WIDTH; x++)
-        {
-            int tileIndex = y * MAP_WIDTH + x;
-            unsigned int tileType = mapData[tileIndex];
-
-            // Calculate the pixel position for this tile
-            int pixelX = startX + (x * TILE_SIZE);
-            int pixelY = startY + (y * TILE_SIZE);
-
-            // Get the sprite for this tile type
-            const unsigned char *sprite = GetSpriteForTileType(tileType);
-
-            // Draw the sprite at the calculated position
-            Paint_DrawBitMapAt(frameBuffer, sprite, pixelX, pixelY, SPRITE_WIDTH, SPRITE_HEIGHT);
-        }
-    }
 }

@@ -1,65 +1,54 @@
 #include <Arduino.h>
-#include "DEV_Config.h"
-#include "EPD.h"
-#include "GUI_Paint.h"
+#include <SPI.h>
+#include <GxEPD2_BW.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
 #include "assets/maps.h"
-#include "assets/sprites.h"
 #include "config.h"
-#include "draw.h"
-#include "player.h"
 #include "tilemap.h"
 #include "ui.h"
 
+// Define pins for the e-paper display
+#define EPD_CS 15
+#define EPD_DC 27
+#define EPD_RST 26
+#define EPD_BUSY 25
+#define EPD_SCK 13  // Match the Waveshare library pin
+#define EPD_MOSI 14 // Match the Waveshare library pin
+
+// Create the display instance - using GxEPD2_154_D67 for 1.54" b/w display (200x200)
+// This is for the Waveshare 1.54" V2 black and white e-paper display
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
+
 void setup()
 {
-  // Initialize the device
-  DEV_Module_Init();
+  Serial.begin(115200);
+
+  // Initialize SPI with custom pins
+  SPI.begin(EPD_SCK, -1, EPD_MOSI, EPD_CS);
 
   // Initialize the display
-  EPD_1IN54_V2_Init();
-  EPD_1IN54_V2_Clear();
-  DEV_Delay_ms(500);
+  display.init();
 
-  // Allocate framebuffer
-  UBYTE *frameBuffer;
-  UWORD ImageSize = ((EPD_1IN54_V2_WIDTH % 8 == 0) ? (EPD_1IN54_V2_WIDTH / 8) : (EPD_1IN54_V2_WIDTH / 8 + 1)) * EPD_1IN54_V2_HEIGHT;
+  // Set text color, size, and font
+  display.setTextColor(GxEPD_BLACK);
+  display.setFont(&FreeMonoBold9pt7b);
 
-  frameBuffer = (UBYTE *)malloc(ImageSize);
-  if (frameBuffer == NULL)
+  // Clear the display with white background
+  display.setFullWindow();
+  display.firstPage();
+  display.setRotation(3);
+  do
   {
-    printf("Memory allocation failed\r\n");
-    return;
-  }
+    display.fillScreen(GxEPD_WHITE);
 
-  // Initialize the paint library (270 degrees rotation is needed for this display)
-  Paint_NewImage(frameBuffer, EPD_1IN54_V2_WIDTH, EPD_1IN54_V2_HEIGHT, 270, WHITE);
-  Paint_SelectImage(frameBuffer);
-  Paint_Clear(WHITE);
+    UI_Draw();
+    Tilemap_Draw(MAP_HOME_1, GAME_TL_X, GAME_TL_Y);
+  } while (display.nextPage());
 
-  // Draw
-  UI_Draw(frameBuffer);
-  // Tilemap_Draw(frameBuffer, MAP_HOME_1, GAME_TL_X, GAME_TL_Y);
-  Player_Draw(frameBuffer, 0, 0);
-
-  // Send the framebuffer to the display
-  EPD_1IN54_V2_Display(frameBuffer);
-
-  // Wait for a while
-  // DEV_Delay_ms(5000);
-
-  // Cleanup the display
-  // EPD_1IN54_V2_Init();
-  // EPD_1IN54_V2_Clear();
-
-  // Put the device to sleep
-  EPD_1IN54_V2_Sleep();
-
-  // Free the framebuffer
-  free(frameBuffer);
-  frameBuffer = NULL;
+  // Put the display to sleep to save power
+  display.hibernate();
 }
 
 void loop()
 {
-  // No need for loop in this demo
 }
