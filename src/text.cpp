@@ -3,29 +3,61 @@
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <string.h>
 
-void Text_DrawBox(const char *text, uint8_t borderWidth, uint8_t padding)
+void GetTextBounds(const char *text, TextBounds *bounds)
 {
-    // Set font for text rendering
-    display.setFont(&FreeMonoBold9pt7b);
-    display.setTextColor(GxEPD_BLACK);
+    // Variables to store the text bounds
+    int16_t x, y;
+    uint16_t w, h;
 
-    // Set maximum width for the text content (constrained by game area and padding)
-    uint16_t maxTextWidth = GAME_END_X - GAME_START_X - (SCREEN_PADDING * 2);
+    // Get the text bounds from the display
+    display.getTextBounds(text, 0, 0, &x, &y, &w, &h);
 
-    // Get font metrics for line height calculation
-    int16_t dummy_x, dummy_y;
-    uint16_t dummy_w, line_height;
-    display.getTextBounds("Ay", 0, 0, &dummy_x, &dummy_y, &dummy_w, &line_height);
+    // Store the results in the bounds struct if provided
+    if (bounds)
+    {
+        bounds->width = w;
+        bounds->height = h;
+        bounds->x = x;
+        bounds->y = y;
+    }
+}
 
-    // Parse the text to determine how many lines we need and the width of each line
-    const int MAX_LINES = 10;        // Maximum number of lines to support
-    const int MAX_LINE_LENGTH = 100; // Maximum characters per line
-    char lines[MAX_LINES][MAX_LINE_LENGTH];
+int AddLine(char lines[][MAX_LINE_LENGTH], int lineCount, const char *text, uint16_t lineWidths[], uint16_t *maxLineWidth)
+{
+    // Check if we've reached the maximum number of lines
+    if (lineCount >= MAX_LINES)
+        return lineCount;
+
+    // Copy the text to the lines array
+    strcpy(lines[lineCount], text);
+
+    // Measure the line width
+    TextBounds lineBounds;
+    GetTextBounds(text, &lineBounds);
+    lineWidths[lineCount] = lineBounds.width;
+
+    // Update max line width if this line is wider
+    if (lineWidths[lineCount] > *maxLineWidth)
+    {
+        *maxLineWidth = lineWidths[lineCount];
+    }
+
+    // Return the incremented line count
+    return lineCount + 1;
+}
+
+int WrapText(const char *text, uint16_t maxWidth, char lines[][MAX_LINE_LENGTH], uint16_t lineWidths[], uint16_t *maxLineWidth)
+{
     int lineCount = 0;
-    int lineWidths[MAX_LINES];
-    int maxLineWidth = 0;
+    *maxLineWidth = 0;
 
-    // Copy the input text so we can modify it
+    // Handle empty or null text
+    if (!text || strlen(text) == 0)
+    {
+        return AddLine(lines, lineCount, "", lineWidths, maxLineWidth);
+    }
+
+    // Copy the input text so we can modify it with strtok
     char textCopy[strlen(text) + 1];
     strcpy(textCopy, text);
 
@@ -33,25 +65,25 @@ void Text_DrawBox(const char *text, uint8_t borderWidth, uint8_t padding)
     char *word = strtok(textCopy, " ");
     char currentLine[MAX_LINE_LENGTH] = "";
 
+    // Process each word
     while (word != NULL && lineCount < MAX_LINES)
     {
         // Create a test line by adding the next word
         char testLine[MAX_LINE_LENGTH];
         if (strlen(currentLine) == 0)
         {
-            strcpy(testLine, word);
+            strcpy(testLine, word); // First word on the line
         }
         else
         {
-            sprintf(testLine, "%s %s", currentLine, word);
+            sprintf(testLine, "%s %s", currentLine, word); // Add word with space
         }
 
         // Check if the test line fits within the maximum width
-        int16_t test_x, test_y;
-        uint16_t test_w, test_h;
-        display.getTextBounds(testLine, 0, 0, &test_x, &test_y, &test_w, &test_h);
+        TextBounds testBounds;
+        GetTextBounds(testLine, &testBounds);
 
-        if (test_w <= maxTextWidth)
+        if (testBounds.width <= maxWidth)
         {
             // The word fits, add it to the current line
             strcpy(currentLine, testLine);
@@ -61,35 +93,16 @@ void Text_DrawBox(const char *text, uint8_t borderWidth, uint8_t padding)
             // The word doesn't fit, start a new line
             if (strlen(currentLine) > 0)
             {
-                // Save the current line
-                strcpy(lines[lineCount], currentLine);
-                int16_t tbx, tby;
-                uint16_t tbw, tbh;
-                display.getTextBounds(currentLine, 0, 0, &tbx, &tby, &tbw, &tbh);
-                lineWidths[lineCount] = tbw;
-                if (lineWidths[lineCount] > maxLineWidth)
-                {
-                    maxLineWidth = lineWidths[lineCount];
-                }
-                lineCount++;
+                // Save the current line and update line count
+                lineCount = AddLine(lines, lineCount, currentLine, lineWidths, maxLineWidth);
 
                 // Start a new line with the current word
                 strcpy(currentLine, word);
             }
             else
             {
-                // The word is too long for a line, we need to truncate it
-                // For simplicity, just use the word as is and let it be clipped
-                strcpy(lines[lineCount], word);
-                int16_t tbx, tby;
-                uint16_t tbw, tbh;
-                display.getTextBounds(word, 0, 0, &tbx, &tby, &tbw, &tbh);
-                lineWidths[lineCount] = tbw;
-                if (lineWidths[lineCount] > maxLineWidth)
-                {
-                    maxLineWidth = lineWidths[lineCount];
-                }
-                lineCount++;
+                // The word is too long for a line, add it anyway (will be clipped)
+                lineCount = AddLine(lines, lineCount, word, lineWidths, maxLineWidth);
                 currentLine[0] = '\0'; // Reset current line
             }
         }
@@ -100,74 +113,79 @@ void Text_DrawBox(const char *text, uint8_t borderWidth, uint8_t padding)
         // If this is the last word, add the current line
         if (word == NULL && strlen(currentLine) > 0 && lineCount < MAX_LINES)
         {
-            strcpy(lines[lineCount], currentLine);
-            int16_t tbx, tby;
-            uint16_t tbw, tbh;
-            display.getTextBounds(currentLine, 0, 0, &tbx, &tby, &tbw, &tbh);
-            lineWidths[lineCount] = tbw;
-            if (lineWidths[lineCount] > maxLineWidth)
-            {
-                maxLineWidth = lineWidths[lineCount];
-            }
-            lineCount++;
+            lineCount = AddLine(lines, lineCount, currentLine, lineWidths, maxLineWidth);
         }
     }
 
-    // If no lines were created (empty text), create at least one empty line
+    // If no lines were created (should not happen with our empty text check), create an empty line
     if (lineCount == 0)
     {
-        strcpy(lines[0], "");
-        lineWidths[0] = 0;
-        lineCount = 1;
+        lineCount = AddLine(lines, lineCount, "", lineWidths, maxLineWidth);
     }
 
-    // Always use the maximum width for the box
-    uint16_t boxWidth = GAME_END_X - GAME_START_X;
-    uint16_t boxHeight = (lineCount * (line_height + 4)) + (padding * 2); // Add some extra space between lines
+    return lineCount;
+}
 
-    // Position the box at GAME_START_X
-    uint16_t boxX = GAME_START_X;
+void DrawBox(int startX, int startY, int boxWidth, int boxHeight)
+{
+    display.fillRect(startX, startY, boxWidth, boxHeight, GxEPD_WHITE);
+    display.drawRect(startX, startY, boxWidth, boxHeight, GxEPD_BLACK);
+}
 
-    // Calculate the Y position based on the tilemap position
-    // This positions the text box below the tilemap
-    uint16_t boxY = GAME_START_Y + (MAP_HEIGHT * TILE_SIZE) + SCREEN_PADDING;
+void Text_Draw(const char *text)
+{
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setTextColor(GxEPD_BLACK);
 
-    // Make sure the box doesn't go off-screen
-    if (boxY + boxHeight > SCREEN_HEIGHT - SCREEN_PADDING)
+    // Get font metrics for line height calculation using representative characters
+    TextBounds metrics;
+    GetTextBounds("Aj|", &metrics); // Characters with ascenders, descenders, and full height
+    uint16_t lineHeight = metrics.height;
+    int16_t baselineY = metrics.y;
+
+    // Arrays to store the wrapped text lines
+    char lines[MAX_LINES][MAX_LINE_LENGTH];
+    uint16_t lineWidths[MAX_LINES];
+    uint16_t maxLineWidth = 0;
+
+    // Wrap the text into lines based on the available width
+    int lineCount = WrapText(text, TEXT_BOX_TEXT_MAX_WIDTH, lines, lineWidths, &maxLineWidth);
+
+    // Calculate total text height
+    uint16_t textHeight = lineCount * lineHeight;
+
+    // Add spacing between lines (but not after the last line)
+    if (lineCount > 1)
     {
-        boxY = SCREEN_HEIGHT - boxHeight - SCREEN_PADDING;
+        textHeight += (lineCount - 1) * TEXT_BOX_LINE_SPACING;
     }
 
-    // Draw the box with border
-    display.fillRect(boxX, boxY, boxWidth, boxHeight, GxEPD_WHITE); // White background
+    // Add equal padding at top and bottom
+    uint16_t boxHeight = textHeight + (TEXT_BOX_PADDING * 2);
+    uint16_t startY = TEXT_BOX_END_Y - boxHeight;
 
-    // Draw border around the box
-    for (uint8_t i = 0; i < borderWidth; i++)
-    {
-        display.drawRect(boxX + i, boxY + i, boxWidth - (i * 2), boxHeight - (i * 2), GxEPD_BLACK);
-    }
+    // Draw the box
+    DrawBox(TEXT_BOX_START_X, startY, TEXT_BOX_WIDTH, boxHeight);
 
-    // Draw the text line by line
-    int16_t cursorY = boxY + padding - dummy_y; // Initial Y position
+    // Calculate the position of the first line with consistent padding
+    int16_t cursorY = startY + TEXT_BOX_PADDING - baselineY;
 
+    // Draw each line of text
     for (int i = 0; i < lineCount; i++)
     {
-        // Calculate the X position for this line (center each line)
-        int16_t cursorX;
-
-        // Get the width of this line
-        int16_t tx, ty;
-        uint16_t tw, th;
-        display.getTextBounds(lines[i], 0, 0, &tx, &ty, &tw, &th);
+        // Get the text bounds for proper positioning
+        TextBounds lineBounds;
+        GetTextBounds(lines[i], &lineBounds);
 
         // Align the text to the left with padding
-        cursorX = boxX + padding - tx;
+        // The negative lineBounds.x accounts for the text bounds offset
+        int16_t cursorX = TEXT_BOX_START_X + TEXT_BOX_PADDING - lineBounds.x;
 
         // Draw this line of text
         display.setCursor(cursorX, cursorY);
         display.print(lines[i]);
 
-        // Move to the next line
-        cursorY += line_height + 4; // Add some extra space between lines
+        // Move to the next line (add line height and spacing)
+        cursorY += lineHeight + TEXT_BOX_LINE_SPACING;
     }
 }

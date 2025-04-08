@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <GxEPD2_BW.h> // GxEPD2 library for black and white displays
+#include <GxEPD2_BW.h>
 
 // Define pins for the e-paper display
 #define EPD_CS 15
@@ -22,10 +22,6 @@ extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
 // Tile
 #define TILE_SIZE 16
 
-// Tile types
-#define TILE_EMPTY 0
-#define TILE_FULL 1
-
 // Map
 #define MAP_WIDTH 12
 #define MAP_HEIGHT 12
@@ -33,10 +29,17 @@ extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
 // Game
 #define GAME_START_X SCREEN_PADDING
 #define GAME_START_Y SCREEN_PADDING
-#define GAME_END_X SCREEN_WIDTH - SCREEN_PADDING
-#define GAME_END_Y SCREEN_HEIGHT - SCREEN_PADDING
+#define GAME_END_X (SCREEN_WIDTH - SCREEN_PADDING)
+#define GAME_END_Y (SCREEN_HEIGHT - SCREEN_PADDING)
 
-// Player
-#define PLAYER_SIZE 16
+// Text
+#define TEXT_BOX_START_X (GAME_START_X + TEXT_BOX_MARGIN)
+#define TEXT_BOX_END_X (GAME_END_X - TEXT_BOX_MARGIN)
+#define TEXT_BOX_END_Y (GAME_END_Y - TEXT_BOX_MARGIN)
+#define TEXT_BOX_WIDTH (TEXT_BOX_END_X - TEXT_BOX_START_X)
+#define TEXT_BOX_MARGIN 2
+#define TEXT_BOX_PADDING 8
+#define TEXT_BOX_LINE_SPACING 2
+#define TEXT_BOX_TEXT_MAX_WIDTH (TEXT_BOX_WIDTH - (TEXT_BOX_PADDING * 2))
 
 #endif

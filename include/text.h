@@ -2,15 +2,26 @@
 #define TEXT_H
 
 #include <Arduino.h>
+#include "config.h"
+
+#define MAX_LINES 10        // Maximum number of lines to support
+#define MAX_LINE_LENGTH 100 // Maximum characters per line
 
 /**
- * Draws text in a white box with borders, positioned at the bottom of the screen
- * The text will automatically wrap to fit within the box width
- * 
- * @param text The text to display
- * @param borderWidth Width of the border in pixels (default: 1)
- * @param padding Padding inside the box in pixels (default: 4)
+ * Structure to hold text bounds information
  */
-void Text_DrawBox(const char *text, uint8_t borderWidth = 1, uint8_t padding = 4);
+typedef struct
+{
+    uint16_t width;  // Width of the text
+    uint16_t height; // Height of the text
+    int16_t x;       // X offset
+    int16_t y;       // Y offset
+} TextBounds;
+
+/**
+ * Draws text in a white box with borders, positioned at the bottom of the screen.
+ * The text will automatically wrap to fit within the box width.
+ */
+void Text_Draw(const char *text);
 
 #endif

@@ -32,7 +32,7 @@ void setup()
 
     UI_Draw();
     Tilemap_Draw(MAP_HOME_1, GAME_START_X, GAME_START_Y);
-    Text_DrawBox("Hey!", 2, 6);
+    Text_Draw("Hey X, welcome to you and to this eink autonomous adventure!");
   } while (display.nextPage());
 
   // Put the display to sleep to save power
