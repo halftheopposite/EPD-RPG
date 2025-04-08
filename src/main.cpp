@@ -34,7 +34,7 @@ void setup()
     display.fillScreen(GxEPD_WHITE);
 
     UI_Draw();
-    Tilemap_Draw(MAP_HOME_1, GAME_TL_X, GAME_TL_Y);
+    Tilemap_Draw(MAP_HOME_1, GAME_START_X, GAME_START_Y);
   } while (display.nextPage());
 
   // Put the display to sleep to save power

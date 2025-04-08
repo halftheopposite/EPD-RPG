@@ -4,12 +4,18 @@
 void UI_Draw()
 {
     // Corners
-    display.fillRect(1, 1, 3, 3, GxEPD_BLACK);
-    display.fillRect(1, SCREEN_HEIGHT - 4, 3, 3, GxEPD_BLACK);
-    display.fillRect(SCREEN_WIDTH - 4, 1, 3, 3, GxEPD_BLACK);
-    display.fillRect(SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4, 3, 3, GxEPD_BLACK);
+    int size = 3;
+    int cornerX1 = 1;
+    int cornerY1 = 1;
+    int cornerX2 = SCREEN_WIDTH - SCREEN_PADDING;
+    int cornerY2 = SCREEN_HEIGHT - SCREEN_PADDING;
+
+    display.fillRect(cornerX1, cornerY1, size, size, GxEPD_BLACK);
+    display.fillRect(cornerX1, cornerY2, size, size, GxEPD_BLACK);
+    display.fillRect(cornerX2, cornerY1, size, size, GxEPD_BLACK);
+    display.fillRect(cornerX2, cornerY2, size, size, GxEPD_BLACK);
 
     // Borders
-    display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GxEPD_BLACK);
-    display.drawRect(2, 2, SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4, GxEPD_BLACK);
+    display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GxEPD_BLACK);                                                                     // Outer border
+    display.drawRect(SCREEN_PADDING / 2, SCREEN_PADDING / 2, SCREEN_WIDTH - SCREEN_PADDING, SCREEN_HEIGHT - SCREEN_PADDING, GxEPD_BLACK); // Inner border
 }
